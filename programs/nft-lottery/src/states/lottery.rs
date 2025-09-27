@@ -7,12 +7,14 @@ use crate::constants::DISCRIMINATOR;
 pub struct Lottery {
     pub id: u64,
     pub collection_mint: Pubkey,
+    pub randomness_account: Pubkey,
     pub prize: u64,
     pub start: i64,
     pub end: i64,
     pub winner: u64,
     pub ticket_price: u64,
     pub total_tickets: u64,
+    pub max_tickets: u64,
     pub bump: u8,
 }
 

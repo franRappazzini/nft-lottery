@@ -38,7 +38,6 @@ impl<'info> InitializeConfig<'info> {
         self.global_config.set_inner(GlobalConfig {
             authority: self.authority.key(),
             next_lottery_id: 0,
-            randomness_account: Pubkey::default(),
             treasury: self.treasury.key(),
             fee_bps,
             bump,

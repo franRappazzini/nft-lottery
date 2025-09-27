@@ -1,12 +1,15 @@
 use anchor_lang::{prelude::*, system_program};
 use anchor_spl::{
     associated_token::AssociatedToken,
-    metadata::{self, mpl_token_metadata::types::{Collection, Creator, DataV2}, Metadata},
-    token_interface::{self, Mint, TokenAccount, TokenInterface},
+    metadata::Metadata,
+    token_interface::{Mint, TokenAccount, TokenInterface},
 };
 
 use crate::{
-    constants::{COLLECTION_MINT_SEED, GLOBAL_CONFIG_SEED, LOTTERY_SEED, TICKET_MINT_SEED, TREASURY_SEED},
+    constants::{
+        COLLECTION_MINT_SEED, GLOBAL_CONFIG_SEED, LOTTERY_SEED, TICKET_MINT_SEED, TREASURY_SEED,
+    },
+    errors::DappError,
     instructions::utils,
     states::{GlobalConfig, Lottery},
 };
@@ -35,6 +38,7 @@ pub struct BuyTicket<'info> {
         mut,
         seeds = [LOTTERY_SEED, lottery_id.to_le_bytes().as_ref()],
         bump = lottery.bump,
+        constraint = lottery.total_tickets < lottery.max_tickets @ DappError::MaxTicketsReached,
     )]
     pub lottery: Account<'info, Lottery>,
 
@@ -120,8 +124,6 @@ impl<'info> BuyTicket<'info> {
             Some(signer_seeds),
         )?;
 
-        msg!("Minted ticket NFT to: {}", self.buyer_token_account.key());
-
         utils::create_metadata_accounts(
             &self.metadata_account,
             &self.mint,
@@ -137,11 +139,6 @@ impl<'info> BuyTicket<'info> {
             Some(signer_seeds),
         )?;
 
-        msg!(
-            "Created metadata account for: {}",
-            self.buyer_token_account.key()
-        );
-
         utils::create_master_edition(
             &self.edition_account,
             &self.mint,
@@ -156,156 +153,12 @@ impl<'info> BuyTicket<'info> {
             Some(signer_seeds),
         )?;
 
-        msg!(
-            "Created master edition account for: {}",
-            self.buyer_token_account.key()
-        );
-
         utils::sign_metadata(
             &self.metadata_account,
             &self.global_config.to_account_info(),
             &self.token_metadata_program,
             Some(signer_seeds),
         )?;
-
-        msg!(
-            "Signed metadata account for: {}",
-            self.buyer_token_account.key()
-        );
-
-        self.lottery.total_tickets += 1;
-        self.lottery.prize += self.lottery.ticket_price;
-
-        Ok(())
-    }
-
-    pub fn buy_ticket2(&mut self, lottery_id: u64, collection_mint_bump: u8) -> Result<()> {
-        let cpi_accounts = system_program::Transfer {
-            from: self.buyer.to_account_info(),
-            to: self.treasury.to_account_info(),
-        };
-
-        let cpi_ctx = CpiContext::new(self.system_program.to_account_info(), cpi_accounts);
-
-        system_program::transfer(cpi_ctx, self.lottery.ticket_price)?;
-
-        // let signer_seeds: &[&[&[u8]]] = &[&[COLLECTION_MINT_SEED, &lottery_id.to_le_bytes(), &[collection_mint_bump]]];
-        let signer_seeds: &[&[&[u8]]] = &[&[GLOBAL_CONFIG_SEED, &[self.global_config.bump]]];
-
-        let cpi_accounts = token_interface::MintTo {
-            authority: self.global_config.to_account_info(),
-            mint: self.mint.to_account_info(),
-            to: self.buyer_token_account.to_account_info(),
-        };
-
-        let cpi_ctx = CpiContext::new_with_signer(
-            self.token_program.to_account_info(),
-            cpi_accounts,
-            signer_seeds,
-        );
-
-        token_interface::mint_to(cpi_ctx, 1)?;
-
-        msg!("Minted ticket NFT to: {}", self.buyer_token_account.key());
-        let cpi_accounts = metadata::CreateMetadataAccountsV3 {
-            metadata: self.metadata_account.to_account_info(),
-            mint: self.mint.to_account_info(),
-            mint_authority: self.global_config.to_account_info(),
-            payer: self.buyer.to_account_info(),
-            update_authority: self.global_config.to_account_info(),
-            system_program: self.system_program.to_account_info(),
-            rent: self.rent.to_account_info(),
-        };
-
-        let cpi_ctx = 
-            CpiContext::new_with_signer(
-                self.token_metadata_program.to_account_info(),
-                cpi_accounts,
-                signer_seeds,
-        );
-
-
-
-
-    let data = DataV2 {
-            collection: 
-                Some(Collection {
-                    verified: false,
-                    key: self.collection_mint.key(),
-                })
-            ,
-            name:      format!(
-            "NFT Lottery {} #{}",
-           self.global_config.next_lottery_id,
-           self.lottery.total_tickets
-        ),
-            symbol: "LTRY".to_string(),
-            uri: "https://plus.unsplash.com/premium_photo-1718191345906-39c178e43133?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8bG90dGVyeSUyMHdpbm5lcnxlbnwwfHwwfHx8MA%3D%3D".to_string(),
-            seller_fee_basis_points: 0,
-            creators: Some(vec![Creator{
-                address: self.global_config.key(),
-                verified: true,
-                share: 100,
-            }]),
-            uses: None,
-        };
-
-    metadata::create_metadata_accounts_v3(
-        cpi_ctx,
-        data,
-        false,
-        false,
-            None
-
-    )
-?;
-
-        msg!(
-            "Created metadata account for: {}",
-            self.buyer_token_account.key()
-        );
-
-      let cpi_accounts = metadata::CreateMasterEditionV3 {
-        edition: self.edition_account.to_account_info(),
-        mint: self.mint.to_account_info(),
-        update_authority: self.global_config.to_account_info(),
-        mint_authority: self.global_config.to_account_info(),
-        payer: self.buyer.to_account_info(),
-        metadata: self.metadata_account.to_account_info(),
-        token_program: self.token_program.to_account_info(),
-        system_program: self.system_program.to_account_info(),
-        rent: self.rent.to_account_info(),
-    };
-
-    let cpi_ctx = CpiContext::new_with_signer(
-        self.token_metadata_program.to_account_info(),
-        cpi_accounts,
-        signer_seeds,
-    );
-
-    metadata::create_master_edition_v3(cpi_ctx, Some(0))?;
-
-        msg!(
-            "Created master edition account for: {}",
-            self.buyer_token_account.key()
-        );
-
-       let cpi_accounts = metadata::SignMetadata {
-        metadata: self.metadata_account.to_account_info(),
-        creator: self.global_config.to_account_info(),
-    };
-
-    let cpi_ctx = CpiContext::new_with_signer(
-        self.token_metadata_program.to_account_info(),
-            cpi_accounts,
-            signer_seeds,
-        );
-
-    metadata::sign_metadata(cpi_ctx)?;
-        msg!(
-            "Signed metadata account for: {}",
-            self.buyer_token_account.key()
-        );
 
         self.lottery.total_tickets += 1;
         self.lottery.prize += self.lottery.ticket_price;

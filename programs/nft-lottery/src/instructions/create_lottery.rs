@@ -1,11 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::{
-    metadata::{
-        self,
-        mpl_token_metadata::types::{CollectionDetails, Creator, DataV2},
-        Metadata,
-    },
-    token_interface::{self, Mint, TokenAccount, TokenInterface},
+    metadata::Metadata,
+    token_interface::{Mint, TokenAccount, TokenInterface},
 };
 
 use crate::{
@@ -92,7 +88,12 @@ pub struct CreateLottery<'info> {
 }
 
 impl<'info> CreateLottery<'info> {
-    pub fn create_lottery(&mut self, ticket_price: u64, lottery_bump: u8) -> Result<()> {
+    pub fn create_lottery(
+        &mut self,
+        ticket_price: u64,
+        max_tickets: u64,
+        lottery_bump: u8,
+    ) -> Result<()> {
         let signer_seeds: &[&[&[u8]]] = &[&[GLOBAL_CONFIG_SEED, &[self.global_config.bump]]];
 
         utils::create_mint(
@@ -142,12 +143,14 @@ impl<'info> CreateLottery<'info> {
         self.lottery.set_inner(Lottery {
             id: self.global_config.next_lottery_id,
             collection_mint: self.collection_mint.key(),
+            randomness_account: Pubkey::default(),
             prize: 0,
             start: Clock::get()?.unix_timestamp,
             end: 0,
             winner: 0,
             ticket_price,
             total_tickets: 0,
+            max_tickets,
             bump: lottery_bump,
         });
 
