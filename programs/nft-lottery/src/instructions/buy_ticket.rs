@@ -55,7 +55,11 @@ pub struct BuyTicket<'info> {
         mint::decimals = 0,
         mint::authority = global_config,
         mint::freeze_authority = global_config,
-        seeds = [TICKET_MINT_SEED, lottery_id.to_le_bytes().as_ref(), lottery.total_tickets.to_le_bytes().as_ref()],
+        seeds = [
+            TICKET_MINT_SEED,
+            lottery_id.to_le_bytes().as_ref(),
+            lottery.total_tickets.to_le_bytes().as_ref()
+        ],
         bump
     )]
     pub mint: InterfaceAccount<'info, Mint>,

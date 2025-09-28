@@ -148,9 +148,11 @@ impl<'info> CreateLottery<'info> {
             start: Clock::get()?.unix_timestamp,
             end: 0,
             winner: 0,
+            winner_chosen: false,
             ticket_price,
             total_tickets: 0,
             max_tickets,
+            prize_claimed: false,
             bump: lottery_bump,
         });
 

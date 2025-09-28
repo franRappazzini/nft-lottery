@@ -8,6 +8,7 @@ pub struct GlobalConfig {
     pub authority: Pubkey,
     pub next_lottery_id: u64,
     pub treasury: Pubkey,
+    pub collected_fees: u64,
     pub fee_bps: u16,
     pub bump: u8,
 }

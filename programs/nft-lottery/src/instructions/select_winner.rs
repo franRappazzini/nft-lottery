@@ -23,8 +23,8 @@ pub struct SelectWinner<'info> {
         mut,
         seeds = [LOTTERY_SEED, lottery_id.to_le_bytes().as_ref()],
         bump = lottery.bump,
-        // constraint = lottery.total_tickets == lottery.max_tickets @ ErrorCode::LotteryNotFull,
-        // constraint = lottery.winner.is_none() @ ErrorCode::WinnerAlreadySelected,
+        has_one = randomness_account @ DappError::InvalidRandomnessAccount,
+        constraint = !lottery.winner_chosen @ DappError::WinnerAlreadySelected,
     )]
     pub lottery: Account<'info, Lottery>,
 
@@ -37,8 +37,6 @@ impl<'info> SelectWinner<'info> {
         // Load clock to check data from the future
         let clock = Clock::get()?;
 
-        require!(clock.slot < self.lottery.end as u64, DappError::OutOfTime);
-
         // Update player_state's randomness_account
         let randomness_data =
             RandomnessAccountData::parse(self.randomness_account.data.borrow()).unwrap();
@@ -47,7 +45,13 @@ impl<'info> SelectWinner<'info> {
             .get_value(clock.slot)
             .map_err(|_| DappError::RandomnessNotResolved)?;
 
-        msg!("Random value: {:?}", revealed_random_value);
+        let winner = revealed_random_value[0] as u64 % self.lottery.total_tickets;
+
+        msg!("Winner: {:?}", winner);
+
+        self.lottery.winner = winner;
+        self.lottery.winner_chosen = true;
+        self.lottery.end = clock.unix_timestamp;
 
         Ok(())
     }

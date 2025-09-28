@@ -6,7 +6,7 @@ mod states;
 use anchor_lang::prelude::*;
 use instructions::*;
 
-declare_id!("4N47FFTLdp2kLqHNxS2VRndT4Mq2yjnRpFhi98phUkca");
+declare_id!("B6VvVi2nqC5vQfDUxEjcBNCHN7r1kBMZGSAAJyUg3e2j");
 
 #[program]
 pub mod nft_lottery {
@@ -36,5 +36,13 @@ pub mod nft_lottery {
 
     pub fn select_winner(ctx: Context<SelectWinner>, lottery_id: u64) -> Result<()> {
         ctx.accounts.select_winner(lottery_id)
+    }
+
+    pub fn claim_prize(ctx: Context<ClaimPrize>, lottery_id: u64) -> Result<()> {
+        ctx.accounts.claim_prize(lottery_id, ctx.bumps.treasury)
+    }
+
+    pub fn withdraw_fees(ctx: Context<WithdrawFees>) -> Result<()> {
+        ctx.accounts.withdraw_fees(ctx.bumps.treasury)
     }
 }

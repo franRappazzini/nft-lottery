@@ -10,4 +10,16 @@ pub enum DappError {
     RandomnessNotResolved,
     #[msg("Randomness already revealed.")]
     RandomnessAlreadyRevealed,
+    #[msg("The provided randomness account is invalid.")]
+    InvalidRandomnessAccount,
+    #[msg("A winner has already been selected for this lottery.")]
+    WinnerAlreadySelected,
+    #[msg("No winner has been selected yet for this lottery.")]
+    WinnerNotSelected,
+    #[msg("You do not own a ticket for this lottery.")]
+    NoTicketOwned,
+    #[msg("The prize for this lottery has already been claimed.")]
+    PrizeAlreadyClaimed,
+    #[msg("The treasury has no fees to withdraw.")]
+    NoFees,
 }

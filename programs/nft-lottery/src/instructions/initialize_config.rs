@@ -39,6 +39,7 @@ impl<'info> InitializeConfig<'info> {
             authority: self.authority.key(),
             next_lottery_id: 0,
             treasury: self.treasury.key(),
+            collected_fees: 0,
             fee_bps,
             bump,
         });

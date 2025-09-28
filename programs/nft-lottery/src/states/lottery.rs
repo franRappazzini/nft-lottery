@@ -12,9 +12,11 @@ pub struct Lottery {
     pub start: i64,
     pub end: i64,
     pub winner: u64,
+    pub winner_chosen: bool,
     pub ticket_price: u64,
     pub total_tickets: u64,
     pub max_tickets: u64,
+    pub prize_claimed: bool,
     pub bump: u8,
 }
 
