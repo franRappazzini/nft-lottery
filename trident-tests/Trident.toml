@@ -1,0 +1,9 @@
+[fuzz.metrics]
+enabled = true
+dashboard = true
+
+
+[[fuzz.programs]]
+address = "B6VvVi2nqC5vQfDUxEjcBNCHN7r1kBMZGSAAJyUg3e2j"
+program = "../target/deploy/nft_lottery.so"
+ 
