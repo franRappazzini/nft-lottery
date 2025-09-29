@@ -1,6 +1,7 @@
 [workspace]
 members = [
-    "programs/*"
+    "programs/*",
+    "tests",
 ]
 resolver = "2"
 rust-version = "1.81.0" # Required by Anchor

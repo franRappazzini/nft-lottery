@@ -16,13 +16,28 @@ pub struct WithdrawFeesInstruction {
 #[instruction_data(WithdrawFeesInstructionData)]
 #[storage(FuzzAccounts)]
 pub struct WithdrawFeesInstructionAccounts {
-    #[account(mut, signer)]
+    #[account(
+        mut,
+        signer,
+        storage::name = authority,
+        storage::account_id = (0..1)
+    )]
     pub authority: TridentAccount,
 
-    #[account(mut)]
+    #[account(
+        mut,
+        storage::name = global_config,
+        storage::account_id = (0..1),
+        seeds = [b"global_config"],
+    )]
     pub global_config: TridentAccount,
 
-    #[account(mut)]
+    #[account(
+        mut,
+        storage::name = treasury,
+        storage::account_id = (0..1),
+        seeds = [b"treasury"],
+    )]
     pub treasury: TridentAccount,
 
     #[account(address = "11111111111111111111111111111111")]

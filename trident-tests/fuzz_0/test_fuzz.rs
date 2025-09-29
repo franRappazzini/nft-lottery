@@ -37,6 +37,15 @@ impl FuzzTest {
     fn flow1(&mut self) {
         // perform logic which is meant to be fuzzed
         // this flow is selected randomly from other flows
+        let mut tx = CreateLotteryTransaction::build(&mut self.trident, &mut self.fuzz_accounts);
+
+        self.trident
+            .execute_transaction(&mut tx, Some("CreateLottery"));
+
+        let mut tx_2 = BuyTicketTransaction::build(&mut self.trident, &mut self.fuzz_accounts);
+
+        self.trident
+            .execute_transaction(&mut tx_2, Some("BuyTicket"));
     }
 
     #[flow]
@@ -49,6 +58,10 @@ impl FuzzTest {
     fn end(&mut self) {
         // perform any cleaning here, this method will be executed
         // at the end of each iteration
+        let mut tx = WithdrawFeesTransaction::build(&mut self.trident, &mut self.fuzz_accounts);
+
+        self.trident
+            .execute_transaction(&mut tx, Some("WithdrawFees"));
     }
 }
 

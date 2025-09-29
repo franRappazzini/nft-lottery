@@ -9,3 +9,5 @@ test-ledger
 setup/*.json
 setup/*.so
 .fuzz-artifacts/
+tests/src/*.rs
+tests/*.toml

@@ -64,7 +64,7 @@ pub struct InitializeConfigInstructionData {
 impl InstructionHooks for InitializeConfigInstruction {
     type IxAccounts = FuzzAccounts;
 
-    fn set_data(&mut self, trident: &mut Trident, fuzz_accounts: &mut Self::IxAccounts) {
+    fn set_data(&mut self, trident: &mut Trident, _fuzz_accounts: &mut Self::IxAccounts) {
         self.data.fee_bps = trident.gen_range(0..u16::MAX)
     }
 }
